@@ -1,3 +1,9 @@
+insightface_func/
+batch/input/
+batch/output/
+batch/input_faces/
+.env.local
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,0 +1,1 @@
+    python batch_simswap_video.py %1 %2 %3 

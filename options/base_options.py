@@ -2,6 +2,7 @@ import argparse
 import os
 from util import util
 import torch
+import sys
 
 class BaseOptions():
     def __init__(self):
@@ -11,7 +12,7 @@ class BaseOptions():
     def initialize(self):
         # experiment specifics
         self.parser.add_argument('--name', type=str, default='people', help='name of the experiment. It decides where to store samples and models')
-        self.parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
+        self.parser.add_argument('--gpu_ids', type=str, default='-1', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
         self.parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
         self.parser.add_argument('--model', type=str, default='pix2pixHD', help='which model to use')
         self.parser.add_argument('--norm', type=str, default='batch', help='instance normalization or batch normalization')
@@ -64,6 +65,8 @@ class BaseOptions():
         self.parser.add_argument('--image_size', type=int, default=224, help='number of clusters for features')
         self.parser.add_argument('--norm_G', type=str, default='spectralspadesyncbatch3x3', help='instance normalization or batch normalization')
         self.parser.add_argument('--semantic_nc', type=int, default=3, help='number of clusters for features')
+        
+        self.parser.add_argument('--print_information', type=bool, default=False, help='Print out the options or not')
         self.initialized = True
 
     def parse(self, save=True):
@@ -80,15 +83,16 @@ class BaseOptions():
                 self.opt.gpu_ids.append(id)
         
         # set gpu ids
-        if len(self.opt.gpu_ids) > 0:
+        if torch.cuda.is_available() and len(self.opt.gpu_ids) > 0:
             torch.cuda.set_device(self.opt.gpu_ids[0])
 
         args = vars(self.opt)
 
-        print('------------ Options -------------')
-        for k, v in sorted(args.items()):
-            print('%s: %s' % (str(k), str(v)))
-        print('-------------- End ----------------')
+        if(self.opt.print_information == True):
+            print('------------ Options -------------')
+            for k, v in sorted(args.items()):
+                print('%s: %s' % (str(k), str(v)))
+            print('-------------- End ----------------')
 
         # save to the disk
         if self.opt.isTrain:

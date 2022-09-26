@@ -38,7 +38,7 @@ def define_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_glo
         netG = Encoder(input_nc, output_nc, ngf, n_downsample_global, norm_layer)
     else:
         raise('generator not implemented!')
-    print(netG)
+    print('NetG: ' + netG)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())   
         netG.cuda(gpu_ids[0])
@@ -48,7 +48,7 @@ def define_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_glo
 def define_G_Adain(input_nc, output_nc, latent_size, ngf, netG, n_downsample_global=2, n_blocks_global=4, norm='instance', gpu_ids=[]):
     norm_layer = get_norm_layer(norm_type=norm)
     netG = Generator_Adain(input_nc, output_nc, latent_size, ngf, n_downsample_global, n_blocks_global, norm_layer)
-    print(netG)
+    print('NetG: ' + netG)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
         netG.cuda(gpu_ids[0])
@@ -58,7 +58,7 @@ def define_G_Adain(input_nc, output_nc, latent_size, ngf, netG, n_downsample_glo
 def define_G_Adain_Mask(input_nc, output_nc, latent_size, ngf, netG, n_downsample_global=2, n_blocks_global=4, norm='instance', gpu_ids=[]):
     norm_layer = get_norm_layer(norm_type=norm)
     netG = Generator_Adain_Mask(input_nc, output_nc, latent_size, ngf, n_downsample_global, n_blocks_global, norm_layer)
-    print(netG)
+    print('NetG: ' + netG)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
         netG.cuda(gpu_ids[0])
@@ -68,7 +68,7 @@ def define_G_Adain_Mask(input_nc, output_nc, latent_size, ngf, netG, n_downsampl
 def define_G_Adain_Upsample(input_nc, output_nc, latent_size, ngf, netG, n_downsample_global=2, n_blocks_global=4, norm='instance', gpu_ids=[]):
     norm_layer = get_norm_layer(norm_type=norm)
     netG = Generator_Adain_Upsample(input_nc, output_nc, latent_size, ngf, n_downsample_global, n_blocks_global, norm_layer)
-    print(netG)
+    print('NetG: ' + netG)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
         netG.cuda(gpu_ids[0])
@@ -78,7 +78,7 @@ def define_G_Adain_Upsample(input_nc, output_nc, latent_size, ngf, netG, n_downs
 def define_G_Adain_2(input_nc, output_nc, latent_size, ngf, netG, n_downsample_global=2, n_blocks_global=4, norm='instance', gpu_ids=[]):
     norm_layer = get_norm_layer(norm_type=norm)
     netG = Generator_Adain_2(input_nc, output_nc, latent_size, ngf, n_downsample_global, n_blocks_global, norm_layer)
-    print(netG)
+    print('NetG: ' + netG)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
         netG.cuda(gpu_ids[0])
@@ -88,7 +88,7 @@ def define_G_Adain_2(input_nc, output_nc, latent_size, ngf, netG, n_downsample_g
 def define_D(input_nc, ndf, n_layers_D, norm='instance', use_sigmoid=False, num_D=1, getIntermFeat=False, gpu_ids=[]):        
     norm_layer = get_norm_layer(norm_type=norm)   
     netD = MultiscaleDiscriminator(input_nc, ndf, n_layers_D, norm_layer, use_sigmoid, num_D, getIntermFeat)   
-    print(netD)
+    print('NetG: ' + netG)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
         netD.cuda(gpu_ids[0])
@@ -194,7 +194,7 @@ class GANLoss(nn.Module):
 class VGGLoss(nn.Module):
     def __init__(self, gpu_ids):
         super(VGGLoss, self).__init__()        
-        self.vgg = Vgg19().cuda()
+        self.vgg = Vgg19().to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         self.criterion = nn.L1Loss()
         self.weights = [1.0/32, 1.0/16, 1.0/8, 1.0/4, 1.0]        
 
@@ -357,11 +357,11 @@ class SpecificNorm(nn.Module):
         """
         super(SpecificNorm, self).__init__()
         self.mean = np.array([0.485, 0.456, 0.406])
-        self.mean = torch.from_numpy(self.mean).float().cuda()
+        self.mean = torch.from_numpy(self.mean).float().to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         self.mean = self.mean.view([1, 3, 1, 1])
 
         self.std = np.array([0.229, 0.224, 0.225])
-        self.std = torch.from_numpy(self.std).float().cuda()
+        self.std = torch.from_numpy(self.std).float().to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         self.std = self.std.view([1, 3, 1, 1])
 
     def forward(self, x):

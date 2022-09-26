@@ -28,8 +28,9 @@ Face.__new__.__defaults__ = (None, ) * len(Face._fields)
 
 
 class Face_detect_crop:
-    def __init__(self, name, root='~/.insightface_func/models'):
+    def __init__(self, name, root='~/.insightface_func/models', printInformation = False):
         self.models = {}
+        self.printInformation = printInformation
         root = os.path.expanduser(root)
         onnx_files = glob.glob(osp.join(root, name, '*.onnx'))
         onnx_files = sorted(onnx_files)
@@ -39,7 +40,8 @@ class Face_detect_crop:
                 continue
             model = model_zoo.get_model(onnx_file)
             if model.taskname not in self.models:
-                print('find model:', onnx_file, model.taskname)
+                if(self.printInformation == True):
+                    print('find model:', onnx_file, model.taskname)
                 self.models[model.taskname] = model
             else:
                 print('duplicated model task type, ignore:', onnx_file, model.taskname)
@@ -52,7 +54,9 @@ class Face_detect_crop:
         self.det_thresh = det_thresh
         self.mode = mode
         assert det_size is not None
-        print('set det-size:', det_size)
+        if(self.printInformation == True):
+            print('set det-size:', det_size)
+            
         self.det_size = det_size
         for taskname, model in self.models.items():
             if taskname=='detection':

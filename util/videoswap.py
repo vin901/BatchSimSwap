@@ -7,6 +7,7 @@ LastEditTime: 2021-11-24 19:19:52
 Description: 
 '''
 import os 
+import sys
 import cv2
 import glob
 import torch
@@ -17,6 +18,7 @@ from util.reverse2original import reverse2wholeimage
 import moviepy.editor as mp
 from moviepy.editor import AudioFileClip, VideoFileClip 
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
+import proglog
 import  time
 from util.add_watermark import watermark_image
 from util.norm import SpecificNorm
@@ -39,12 +41,13 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
     if not no_audio:
         video_audio_clip = AudioFileClip(video_path)
 
+    sys.stdout = open(os.devnull, 'w')      # Prevent output ('input mean and std:')
     video = cv2.VideoCapture(video_path)
     logoclass = watermark_image('./simswaplogo/simswaplogo.png')
     ret = True
     frame_index = 0
-
     frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    sys.stdout = sys.__stdout__             # Enable output again
 
     # video_WIDTH = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
 
@@ -58,9 +61,9 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
     if use_mask:
         n_classes = 19
         net = BiSeNet(n_classes=n_classes)
-        net.cuda()
+        net.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
         save_pth = os.path.join('./parsing_model/checkpoint', '79999_iter.pth')
-        net.load_state_dict(torch.load(save_pth))
+        net.load_state_dict(torch.load(save_pth)) if torch.cuda.is_available() else net.load_state_dict(torch.load(save_pth, map_location=torch.device('cpu')))
         net.eval()
     else:
         net =None
@@ -84,7 +87,7 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
                     # BGR TO RGB
                     # frame_align_crop_RGB = frame_align_crop[...,::-1]
 
-                    frame_align_crop_tenor = _totensor(cv2.cvtColor(frame_align_crop,cv2.COLOR_BGR2RGB))[None,...].cuda()
+                    frame_align_crop_tenor = _totensor(cv2.cvtColor(frame_align_crop,cv2.COLOR_BGR2RGB))[None,...].to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
 
                     swap_result = swap_model(None, frame_align_crop_tenor, id_vetor, None, True)[0]
                     cv2.imwrite(os.path.join(temp_results_dir, 'frame_{:0>7d}.jpg'.format(frame_index)), frame)
@@ -118,5 +121,5 @@ def video_swap(video_path, id_vetor, swap_model, detect_model, save_path, temp_r
         clips = clips.set_audio(video_audio_clip)
 
 
-    clips.write_videofile(save_path,audio_codec='aac')
+    clips.write_videofile(save_path,audio_codec='aac',logger=proglog.TqdmProgressBarLogger(print_messages=False))
 

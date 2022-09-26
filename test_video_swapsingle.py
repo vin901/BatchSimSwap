@@ -19,6 +19,7 @@ from options.test_options import TestOptions
 from insightface_func.face_detect_crop_single import Face_detect_crop
 from util.videoswap import video_swap
 import os
+import sys
 
 def lcm(a, b): return abs(a * b) / fractions.gcd(a, b) if a and b else 0
 
@@ -54,9 +55,11 @@ if __name__ == '__main__':
     model = create_model(opt)
     model.eval()
 
-
+    sys.stdout = open(os.devnull, 'w')      # Prevent output ('input mean and std:')
     app = Face_detect_crop(name='antelope', root='./insightface_func/models')
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode=mode)
+    sys.stdout = sys.__stdout__             # Enable output again
+    
     with torch.no_grad():
         pic_a = opt.pic_a_path
         # img_a = Image.open(pic_a).convert('RGB')
@@ -74,14 +77,14 @@ if __name__ == '__main__':
         # img_att = img_b.view(-1, img_b.shape[0], img_b.shape[1], img_b.shape[2])
 
         # convert numpy to tensor
-        img_id = img_id.cuda()
-        # img_att = img_att.cuda()
+        img_id = img_id.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
+        # img_att = img_att.to(torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
 
         #create latent id
         img_id_downsample = F.interpolate(img_id, size=(112,112))
         latend_id = model.netArc(img_id_downsample)
         latend_id = F.normalize(latend_id, p=2, dim=1)
-
+        
         video_swap(opt.video_path, latend_id, model, app, opt.output_path,temp_results_dir=opt.temp_path,\
             no_simswaplogo=opt.no_simswaplogo,use_mask=opt.use_mask,crop_size=crop_size)
 
