@@ -111,17 +111,16 @@ class BatchSimSwap():
             return os.path.join(self.getAbsoluteDirectory(), self.getPath('input'), self.dynamicPaths[dynamicPathString])
         return False
     
-    def getFacePath(self, faceFilename):
-        facePath = os.path.join(self.getAbsoluteDirectory(), self.getPath('input'), self.dynamicPaths[faceFilename])
-        # if path.exists()
-    
-    def findFaceFilename(self, face):
+    def findFaceFilename(self, face, absolute = False):
         inputFacesPath = self.getPath('input_faces')
         if(inputFacesPath != False):
             for file in pathlib.Path(inputFacesPath).iterdir():
                 if file.is_file():
                     if face in str(file):
-                        return os.path.basename(file)
+                        if(absolute == True):
+                            return file
+                        else:
+                            return os.path.basename(file)
             return False
         else:
             raise Exception('Unable to locate input_faces path in batch_processing folder.')    

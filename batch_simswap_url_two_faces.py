@@ -4,7 +4,7 @@ import os
 from os import path
 from os import startfile
 
-# BatchProcessing commands and setup
+# batchSimSwap commands and setup
 from batch.BatchSimSwap import BatchSimSwap
 from batch.Face import Face
 from batch.TerminalColors import TerminalColors
@@ -15,8 +15,8 @@ from lxml import etree
 import requests
 
 # Simswap face detection
-from . models.models import create_model
-from . insightface_func.face_detect_crop_multi import Face_detect_crop
+from models.models import create_model
+from insightface_func.face_detect_crop_multi import Face_detect_crop
 import cv2
 import shutil
 
@@ -31,34 +31,41 @@ from send2trash import send2trash
 
 
 def main():
-    global batchProcessing, terminalColors
-    batchProcessing = BatchProcessing()
+    global batchSimSwap, terminalColors
+    batchSimSwap = BatchSimSwap()
     terminalColors = TerminalColors()
     
     os.system('cls')
     sortArguments()
 
     # Display Title
-    batchProcessing.title("Single Face Swap from URL" + (' '+terminalColors.getString('(Debug Mode)', 'yellow') if batchProcessing.debugMode == True else ''))
+    batchSimSwap.title("Single Face Swap from URL" + (' '+terminalColors.getString('(Debug Mode)', 'yellow') if batchSimSwap.debugMode == True else ''))
 
-    print(" ".join(['\tSwapping face', terminalColors.getString("\"" + batchProcessing.faces[1].face + "\"", 'purple'), 'with images downloaded from given URL.']))
+    print(" ".join(['\tSwapping face', terminalColors.getString("\"" + batchSimSwap.faces[1].face + "\"", 'purple'), 'with images downloaded from given URL.']))
 
     # Download Images from URL
-    batchProcessing.title("Downloading Images")
-    input_files, absoluteDirectory = downloadPictures(batchProcessing.url)
+    batchSimSwap.title("Downloading Images")
+    input_files, absoluteDirectory = downloadPictures(batchSimSwap.url)
 
-    extractFacesFromIndexImage(absoluteDirectory, batchProcessing.indexImage)
 
+    batchSimSwap.title("Extracting Faces from images..")
+    extractFacesFromIndexImage(absoluteDirectory, batchSimSwap.indexImageFile)
+    
+    # Create DST_O1 and DST_02 images to source_destination folder
+    # (The faces supplied via the command to swap to)
+    shutil.copy(batchSimSwap.findFaceFilename(batchSimSwap.faces.get(1).filename, True), os.path.join(absoluteDirectory,"source_destination", "DST_01.png"))
+    shutil.copy(batchSimSwap.findFaceFilename(batchSimSwap.faces.get(2).filename, True), os.path.join(absoluteDirectory,"source_destination", "DST_02.png"))
+    
     # Swap Faces
-    batchProcessing.title("Swapping faces though " + str(len(input_files)) + " images..")
+    batchSimSwap.title("Swapping faces though " + str(len(input_files)) + " images..")
     runSuccess = True
     for index, imagefile in enumerate(input_files):
-        sys.stdout.write("\t" + str(index+1) + ") " + terminalColors.getString(imagefile, 'blue') + " swapping with face "+terminalColors.getString("\"" + batchProcessing.faces[1].face + "\"", 'purple'))
+        sys.stdout.write("\t" + str(index+1) + ") " + terminalColors.getString(imagefile, 'blue') + " swapping with face "+terminalColors.getString(batchSimSwap.faces[1].face, 'face') + " and " + terminalColors.getString(batchSimSwap.faces[2].face, 'face'))
         success = faceSwap(absoluteDirectory, imagefile, index)
         if not success: runSuccess = False
         
     if not runSuccess:
-        batchProcessing.title('Errors Found..', 'red')
+        batchSimSwap.title('Errors Found..', 'red')
         print(terminalColors.red)
         print('\tThere was errors when running the faceswap, try turning on debugMode  True in batch_processing/batch_processing.py to find out what is going wrong.')
         print('\n\tIf it was only one or two files, then it may just be alignment issues.  If all files are showing an error and none of them worked, then there is a problem with your simswap installation, or a possible bug in BatchSimSwap.  You can raise an issue at https://github.com/chud37/BatchSimSwap/issues')
@@ -70,18 +77,18 @@ def main():
     # Open working directory
     os.startfile(absoluteDirectory)
 
-    batchProcessing.title('Finished.')
+    batchSimSwap.title('Finished.')
 
-# Prepare all given arguments into batchProcessing object
+# Prepare all given arguments into batchSimSwap object
 def sortArguments():
     # Find given faces and files
     for faceNumber in range(1, 3):
         try:
             if(isinstance(sys.argv[faceNumber], str)):
-                faceFilename = batchProcessing.findFaceFilename(sys.argv[faceNumber])
+                faceFilename = batchSimSwap.findFaceFilename(sys.argv[faceNumber])
                 if(isinstance(faceFilename, str)):
-                    if(batchProcessing.debugMode == True): print("\tFound face from sys.argv " + str(faceNumber) + " face name: " + sys.argv[faceNumber])
-                    batchProcessing.faces[faceNumber] = Face(sys.argv[faceNumber], faceFilename)
+                    if(batchSimSwap.debugMode == True): print("\tFound face from sys.argv " + str(faceNumber) + " face name: " + sys.argv[faceNumber])
+                    batchSimSwap.faces[faceNumber] = Face(sys.argv[faceNumber], faceFilename)
                 else:
                     print(str(sys.argv))
                     raise SystemExit(' '.join(['Unable to find file for face',str(faceNumber),"\""+str(sys.argv[faceNumber])+"\" is not a valid face."]))
@@ -92,14 +99,14 @@ def sortArguments():
 
     ## (int) Index Image
     try:
-        batchProcessing.indexImage = int(sys.argv[3]) - 1
+        batchSimSwap.indexImage = int(sys.argv[3]) - 1
     except IndexError:
         raise SystemExit('Argument 3: IndexImage has not been passed.')
 
     ## (string) Website URL
     try:
         if(isinstance(sys.argv[4], str)):
-            batchProcessing.url = sys.argv[4]
+            batchSimSwap.url = sys.argv[4]
         else:
             raise SystemExit('Argument 4: URL is not a valid string.')
     except IndexError as e:
@@ -121,8 +128,8 @@ def downloadPictures(target_url):
     except:
         model = ''
 
-    outputFilePath = batchProcessing.createOutputFilePath([
-        batchProcessing.faces.get(1).face,
+    outputFilePath = batchSimSwap.createOutputFilePath([
+        batchSimSwap.faces.get(1).face,
         datetime.now().strftime('%j'),
         ''.join([model,"_",h1])
     ])
@@ -143,9 +150,9 @@ def downloadPictures(target_url):
                 f.write(re.content)
                 file = target.split('/')[-1]
             
-            if (index == batchProcessing.indexImage): 
+            if (index == batchSimSwap.indexImage): 
                 indicator = " <-- (IndexImage)"
-                batchProcessing.indexImageFile = file
+                batchSimSwap.indexImageFile = file
             else: 
                 indicator = ""
             
@@ -163,7 +170,7 @@ def extractFacesFromIndexImage(directory, indexImageFile):
 
     multiSwapDirectory = os.path.join(directory,'source_destination')
 
-    batchProcessing.createDirectory(multiSwapDirectory)
+    batchSimSwap.createDirectory(multiSwapDirectory)
 
     # Get faces from image (Simswap)
     blockPrint()
@@ -204,8 +211,8 @@ def extractFacesFromIndexImage(directory, indexImageFile):
         regionOfImage = cv2Image[y1padding:y2padding, x1padding:x2padding]
         sourceFileName = os.path.join(multiSwapDirectory, "SRC_0"+str(index+1)+".png")
         cv2.imwrite(sourceFileName, regionOfImage) 
-        if(index+1 == 1): whichFace = face1
-        if(index+1 == 2): whichFace = face2
+        if(index+1 == 1): whichFace = batchSimSwap.faces.get(1).face
+        if(index+1 == 2): whichFace = batchSimSwap.faces.get(2).face
         cv2.putText(faceDetectionImage,"Face" + str(index+1) + " " + whichFace, bottomLeftCornerOfText, font, fontScale,fontColor, thickness, lineType)
         cv2.rectangle(faceDetectionImage, (x1padding, y1padding), (x2padding, y2padding), (0, 255, 0), 2)
         cv2.imwrite(os.path.join(multiSwapDirectory, "face-detection.jpg"), faceDetectionImage)
@@ -213,10 +220,12 @@ def extractFacesFromIndexImage(directory, indexImageFile):
 # Block the print for Face_detect_crop used in extractFacesFromIndexImage()
 def blockPrint():
     sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
 
 # Enable print again
 def enablePrint():
     sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
 
 # Compile and run a simswap command with given files
 def faceSwap(directory, originalImage, imagePrefix):
@@ -225,22 +234,22 @@ def faceSwap(directory, originalImage, imagePrefix):
     input_image_file = '"' + directory + "\\" +  str(originalImage).replace('\\','/') + '"'
     output_path_name = '"' + directory + '"'
     output_file_name = '"' + str(imagePrefix) + "_" + os.path.basename(originalImage) + '"'
-    compiled_command = batchProcessing.simswapCommands['image_single']
+    compiled_command = batchSimSwap.simswapCommands['image_multispecific']
     
-    compiled_command = compiled_command.replace('__input_selected_face__', os.path.join(batchProcessing.getbatchSimSwapDirectoryOnly(),batchProcessing.paths['input_faces'], batchProcessing.faces[1].filename).replace("\\","/"))
+    compiled_command = compiled_command.replace('__input_selected_face__', os.path.join(batchSimSwap.getbatchSimSwapDirectoryOnly(),batchSimSwap.paths['input_faces'], batchSimSwap.faces[1].filename).replace("\\","/"))
     compiled_command = compiled_command.replace('__input_image_file__', input_image_file)
     compiled_command = compiled_command.replace('__output_path_name__', output_path_name)
     compiled_command = compiled_command.replace('__output_file_name__', output_file_name)
     compiled_command = compiled_command.replace('__multi_specific_path__', os.path.join(output_path_name, 'source_destination'))
   
-    if(batchProcessing.debugMode):
+    if(batchSimSwap.debugMode):
         print("\n\tReplaced compiled command")
         print("\n" + compiled_command + "\n") 
         subprocess.run(compiled_command)
         send2trash(os.path.join(directory, originalImage))
     else:
         result = subprocess.run(compiled_command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-        if batchProcessing.simswapCommandComplete in str(result.stdout):
+        if batchSimSwap.simswapCommandComplete in str(result.stdout):
             sys.stdout.write(' - ' + terminalColors.getString('Complete.', 'green', True))
         else: 
             sys.stdout.write(' - ' + terminalColors.getString('Error.', 'red', True))
@@ -252,10 +261,10 @@ def faceSwap(directory, originalImage, imagePrefix):
 # Create a link file to the original website provided
 def createLinkFile(directory):
     # Create link.url
-    batchProcessing.title("Creating link.url file")
+    batchSimSwap.title("Creating link.url file")
     with (open(os.path.join(directory,'link.url'), 'w')) as f:
         f.write('[InternetShortcut]\n')
-        f.write('URL='+batchProcessing.url+'\n')
+        f.write('URL='+batchSimSwap.url+'\n')
 
 if __name__ == '__main__':
     main()
