@@ -1,4 +1,4 @@
 
     rem Batch Simswap Helper
     cls
-    python BatchSimSwap/BatchSimSwapHelper.py %1 %2 %3
+    python batch_simswap_helper.py %1 %2 %3
