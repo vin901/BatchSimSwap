@@ -4,6 +4,9 @@ batch/output/
 batch/input_faces/
 .env.local
 
+bstest1.bat
+batch_simswap_bstest1.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
