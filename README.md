@@ -64,6 +64,7 @@ So far all the commands are written for Windows users, as I primarily run Simswa
 | **bsvideo** | `bsvideo 1 james`        | Looks for all the videos inside `./BatchSimSwap/input/input_1` and SimSwaps them with the face james from the `input_faces` folder |
 | **bsimages** | `bsimages 1 james`        | Looks for all the images inside `./BatchSimSwap/input/input_1` and SimSwaps them with the face james from the `input_faces` folder |
 | **bsurl**  | `bsurl james www.etc.com` | Downloads all the images from given URL and SimSwaps them with the face ***james*** from the `input_faces` folder.|
+| **bsurl2**  | `bsurl2 james bob 3 www.etc.com` | Downloads all the images from given URL and SimSwaps them with the faces ***james*** and ***bob*** from the `input_faces` folder.  You must provide an ***IndexImage*** (preferably an image in the set where both people are looking towards the camera)|
 | **bshelp** | `bshelp` | A helper file that will open folders and more.|
 
 ## Common Issues
