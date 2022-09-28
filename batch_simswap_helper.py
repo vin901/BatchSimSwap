@@ -38,6 +38,7 @@ def main():
         "(Wizard) Batch Images",
         "(Wizard) Batch URL",
         "(Wizard) Instagram Post",
+        "Exit BatchSimSwap Helper"
     ]
     command = pick(options, title='Batch Processing Helper & Wizards', indicator='=>', multiselect=False)
     index = command[0][1]
@@ -98,12 +99,7 @@ def main():
         input_folder = input("The single number for the input folder where files are kept:")
 
     elif(index == 9):
-        print(">> Batch URL (3 Faces)")
-        face = input("Enter the name of the face (filename, without extension):")
-        input_folder = input("The single number for the input folder where files are kept:")
-
-    elif(index == 10):
-        print(">> Instagram Post")
+        sys.exit()
 
 
 if __name__ == '__main__':

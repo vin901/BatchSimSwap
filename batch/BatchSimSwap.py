@@ -7,6 +7,7 @@ from pathlib import Path
 from dotenv import dotenv_values
 from .TerminalColors import TerminalColors
 import textwrap
+import time
 
 class BatchSimSwap():
 
@@ -36,6 +37,24 @@ class BatchSimSwap():
         'video_swap_multispecific':     "python test_video_swap_multispecific.py --isTrain false --use_mask --name people --Arc_path arcface_model/arcface_checkpoint.tar --video_path __input_video_file__ --output_path __output_file_name__ --temp_path __temp_folder_path__ --multisepcific_dir __multi_specific_path__ --no_simswaplogo",
     }
     
+    downloadedWeights = {
+        'checkpoints\people': [
+            'latest_net_D1.pth',
+            'latest_net_D2.pth',
+            'latest_net_G.pth'
+        ],
+        'insightface_func\models\\antelope': [
+            'glintr100.onnx',
+            'scrfd_10g_bnkps.onnx'
+        ],
+        'arcface_model': [
+            'arcface_checkpoint.tar'
+        ],
+        'parsing_model\checkpoint': [
+            '79999_iter.pth'
+        ]
+    }
+    
     simswapCommandComplete = '************ Done ! ************'
 
     faces = {}
@@ -43,6 +62,7 @@ class BatchSimSwap():
 
     def __init__(self):
         self.terminalColors = TerminalColors()
+        os.system('cls')
         self.getEnvironmentData()
         self.parseEnvironmentData()
         self.folderChecks()
@@ -50,12 +70,30 @@ class BatchSimSwap():
         
 
     def folderChecks(self):
+        
+        self.title('Performing folder & file checks..')
+        
         for key, directory in self.paths.items():
             absolutePath = os.path.join(self.getAbsoluteDirectory(), directory)
             if not self.pathExists(absolutePath):
                 print('\tFolder doesnt exist: ' + absolutePath)
                 self.createDirectory(absolutePath)
 
+        parentDirectory = str(Path(__file__).parent.parent)
+
+        for weights in self.downloadedWeights.items():
+            for file in weights:
+                if(isinstance(file, str)):
+                    currentDirectory = file
+                if(isinstance(file, list)):
+                    for filename in file:
+                        if not path.exists(os.path.join(parentDirectory, currentDirectory, filename)):
+                            raise SystemExit('\tUnable to find file: ' + os.path.join(parentDirectory, currentDirectory, filename) + '\n\nRun through the preperation guide in the Readme.md and double check you have the files in the right place.')
+                        else:
+                            print('\tFile found:',os.path.join(currentDirectory, filename))
+
+        time.sleep(1)
+        
     def dynamicFolderCheck(self, dynamicFolderNumber, dynamicPathString):
         dynamicPath = False
         # Find the specified dynamic path
