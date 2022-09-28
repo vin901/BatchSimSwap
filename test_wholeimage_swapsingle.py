@@ -19,6 +19,7 @@ from options.test_options import TestOptions
 from insightface_func.face_detect_crop_single import Face_detect_crop
 from util.reverse2original import reverse2wholeimage
 import os
+import sys
 from util.add_watermark import watermark_image
 from util.norm import SpecificNorm
 from parsing_model.model import BiSeNet
@@ -52,8 +53,11 @@ if __name__ == '__main__':
     model.eval()
 
     spNorm =SpecificNorm()
+    
+    sys.stdout = open(os.devnull, 'w')      # Prevent output ('input mean and std:')
     app = Face_detect_crop(name='antelope', root='./insightface_func/models')
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode=mode)
+    sys.stdout = sys.__stdout__             # Enable output again
 
     with torch.no_grad():
         pic_a = opt.pic_a_path

@@ -23,6 +23,7 @@ from util.add_watermark import watermark_image
 import torch.nn as nn
 from util.norm import SpecificNorm
 from parsing_model.model import BiSeNet
+import sys
 
 def lcm(a, b): return abs(a * b) / fractions.gcd(a, b) if a and b else 0
 
@@ -62,8 +63,10 @@ if __name__ == '__main__':
     spNorm =SpecificNorm()
 
 
+    sys.stdout = open(os.devnull, 'w')      # Prevent output ('input mean and std:')
     app = Face_detect_crop(name='antelope', root='./insightface_func/models')
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode=mode)
+    sys.stdout = sys.__stdout__             # Enable output again
 
     pic_a = opt.pic_a_path
     pic_specific = opt.pic_specific_path

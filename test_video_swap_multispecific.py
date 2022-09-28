@@ -11,6 +11,7 @@ from insightface_func.face_detect_crop_multi import Face_detect_crop
 from util.videoswap_multispecific import video_swap
 import os
 import glob
+import sys
 
 def lcm(a, b): return abs(a * b) / fractions.gcd(a, b) if a and b else 0
 
@@ -47,10 +48,11 @@ if __name__ == '__main__':
     model = create_model(opt)
     model.eval()
 
-
+    sys.stdout = open(os.devnull, 'w')      # Prevent output ('input mean and std:')
     app = Face_detect_crop(name='antelope', root='./insightface_func/models')
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode=mode)
-
+    sys.stdout = sys.__stdout__             # Enable output again
+    
     # The specific person to be swapped(source)
 
     source_specific_id_nonorm_list = []
@@ -78,7 +80,10 @@ if __name__ == '__main__':
 
         for target_image_path in target_images_path:
             img_a_whole = cv2.imread(target_image_path)
-            img_a_align_crop, _ = app.get(img_a_whole,crop_size)
+            try:
+                img_a_align_crop, _ = app.get(img_a_whole,crop_size)
+            except:
+                raise SystemExit('Program Failure: There was a problem with ', os.path.basename(target_image_path), '.  This is most likely due to the fact that there is not enough space around the face.  Try and find a face with head and shoulders, looking at the camera.  If you crop the image too close to the face SimSwap won\'t be able to process it.')
             img_a_align_crop_pil = Image.fromarray(cv2.cvtColor(img_a_align_crop[0],cv2.COLOR_BGR2RGB)) 
             img_a = transformer_Arcface(img_a_align_crop_pil)
             img_id = img_a.view(-1, img_a.shape[0], img_a.shape[1], img_a.shape[2])

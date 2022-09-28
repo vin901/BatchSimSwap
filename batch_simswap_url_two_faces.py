@@ -177,7 +177,7 @@ def extractFacesFromIndexImage(directory, indexImageFile):
     app = Face_detect_crop(name='antelope', root='./insightface_func/models')
     app.prepare(ctx_id= 0, det_thresh=0.6, det_size=(640,640),mode='None')
     cv2Image = cv2.imread(os.path.join(directory, indexImageFile))
-    cv2Width, cv2Height, cv2Channels = cv2Image.shape
+    cv2Height, cv2Width, cv2Channels = cv2Image.shape
     faceDetectionImage = cv2Image.copy()
     foundFaces, kpss = app.det_model.detect(cv2Image,
                                              threshold=0.6,

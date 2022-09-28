@@ -1,3 +1,4 @@
+from cgitb import text
 import sys
 import os
 from os import path
@@ -5,20 +6,22 @@ import pathlib
 from pathlib import Path
 from dotenv import dotenv_values
 from .TerminalColors import TerminalColors
-
+import textwrap
 
 class BatchSimSwap():
 
     url = ''
     indexImage = 1
     indexImageFile = ''
+    indexImageTimeStamp = ''
     debugMode = False
     inputFolderNumber = 1
     
     paths = {
-        'input_faces':  'input_faces',
-        'input':        'input',
-        'output':       'output',
+        'input_faces':      'input_faces',
+        'input':            'input',
+        'output':           'output',
+        'multispecific':    'multispecific'
     }
 
     dynamicPaths = {
@@ -30,7 +33,7 @@ class BatchSimSwap():
         'image_single':                 "python test_wholeimage_swapmulti.py --crop_size 224 --use_mask  --name people --Arc_path arcface_model/arcface_checkpoint.tar --pic_a_path ./__input_selected_face__ --pic_b_path __input_image_file__ --output_path __output_path_name__ --output_filename __output_file_name__  --no_simswaplogo",
         'video_swapsingle':             "python test_video_swapsingle.py --isTrain false --use_mask --name people --Arc_path arcface_model/arcface_checkpoint.tar --pic_a_path ./__input_selected_face__ --video_path __input_video_file__ --output_path __output_file_name__ --temp_path __temp_folder_path__ --no_simswaplogo",
         'image_multispecific':          "python test_wholeimage_swap_multispecific.py --crop_size 224 --use_mask  --name people --Arc_path arcface_model/arcface_checkpoint.tar --pic_b_path __input_image_file__ --output_path __output_path_name__ --output_filename __output_file_name__ --multisepcific_dir __multi_specific_path__  --no_simswaplogo",
-        'video_swap_multispecific':     "python test_video_swap_multispecific.py --isTrain false --use_mask --name people --Arc_path arcface_model/arcface_checkpoint.tar --video_path __input_video_file__ --output_path __output_file_name__ --temp_path ./temp_results --multisepcific_dir __multi_specific_path__ --no_simswaplogo",
+        'video_swap_multispecific':     "python test_video_swap_multispecific.py --isTrain false --use_mask --name people --Arc_path arcface_model/arcface_checkpoint.tar --video_path __input_video_file__ --output_path __output_file_name__ --temp_path __temp_folder_path__ --multisepcific_dir __multi_specific_path__ --no_simswaplogo",
     }
     
     simswapCommandComplete = '************ Done ! ************'
@@ -55,6 +58,7 @@ class BatchSimSwap():
 
     def dynamicFolderCheck(self, dynamicFolderNumber, dynamicPathString):
         dynamicPath = False
+        # Find the specified dynamic path
         if dynamicPathString in self.dynamicPaths:
             dynamicPath = self.dynamicPaths.get(dynamicPathString)
 
@@ -156,3 +160,8 @@ class BatchSimSwap():
         self.dynamicPaths['input'] = self.getEnvironmentVar('DYNAMIC_PATH_INPUT') if self.getEnvironmentVar('DYNAMIC_PATH_INPUT') != '' else self.dynamicPaths['input']
         self.dynamicPaths['temp'] = self.getEnvironmentVar('DYNAMIC_PATH_TEMP') if self.getEnvironmentVar('DYNAMIC_PATH_TEMP') != '' else self.dynamicPaths['temp']
         self.debugMode = True if self.getEnvironmentVar('DEBUG_MODE') == 'True' else self.debugMode
+
+    def indentParagraph(self, text, color = 'white'):
+        wrapper = textwrap.TextWrapper(initial_indent=' '*10, width=110, subsequent_indent=' '*10)
+        string = self.terminalColors.getString(text, color)
+        print(wrapper.fill(string))
