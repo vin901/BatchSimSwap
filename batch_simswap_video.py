@@ -62,7 +62,7 @@ def main():
             print("\t" + str(index+1) + ") " + terminalColors.getString(os.path.basename(videofile),'file'))
             clip = VideoFileClip(str(videofile))
             clip = clip.subclip(startSeconds, endSeconds)
-            tmpFileName = os.path.join(batchSimSwap.getDynamicPath('input'), "trimmed_" + os.path.basename(videofile))
+            tmpFileName = os.path.join(batchSimSwap.getDynamicPath('input'), "trimming__" + os.path.basename(videofile))
             clip.write_videofile(tmpFileName,audio_codec='aac',logger=proglog.TqdmProgressBarLogger(print_messages=False))
             clip.close()
             os.remove(str(videofile))
@@ -97,8 +97,6 @@ def sortArguments():
             raise Exception(' '.join(['Unable to find file for face 1',"\""+str(sys.argv[2])+"\""," is not a valid face."]))
     else:
         raise Exception('Face 1 is not a valid face string.')
-    
-    print(sys.argv)
     
     if(isinstance(sys.argv[3], str)):
         batchSimSwap.startTimeStamp = sys.argv[3]
