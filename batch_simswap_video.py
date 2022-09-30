@@ -1,8 +1,9 @@
 
 # File creation & System tools
+from opcode import hasconst
 import sys
 import os
-from os import path
+from os import path, rename
 from os import startfile
 import pathlib
 
@@ -19,6 +20,11 @@ import subprocess
 
 # Send file to Recycle Bin
 from send2trash import send2trash
+
+# Video editing
+from moviepy.editor import *
+import proglog
+import shutil
 
 def main():
     global batchSimSwap, terminalColors
@@ -44,6 +50,24 @@ def main():
         batchSimSwap.faces.get(1).face,
         datetime.now().strftime('%j')
     ])
+
+    if hasattr(batchSimSwap, 'startTimeStamp') and hasattr(batchSimSwap, 'endTimeStamp'):
+        # Cut the videos
+        batchSimSwap.title(' '.join(['Trimming all video in input_'+batchSimSwap.inputFolderNumber,'from', batchSimSwap.startTimeStamp, 'to', batchSimSwap.endTimeStamp]))
+        minutes, seconds = batchSimSwap.startTimeStamp.split(':')
+        startSeconds = (int(minutes) * 60) + int(seconds)
+        minutes, seconds = batchSimSwap.endTimeStamp.split(':')
+        endSeconds = (int(minutes) * 60) + int(seconds)
+        for index, videofile in enumerate(input_files):
+            print("\t" + str(index+1) + ") " + terminalColors.getString(os.path.basename(videofile),'file'))
+            clip = VideoFileClip(str(videofile))
+            clip = clip.subclip(startSeconds, endSeconds)
+            tmpFileName = os.path.join(batchSimSwap.getDynamicPath('input'), "trimmed_" + os.path.basename(videofile))
+            clip.write_videofile(tmpFileName,audio_codec='aac',logger=proglog.TqdmProgressBarLogger(print_messages=False))
+            clip.close()
+            os.remove(str(videofile))
+            os.rename(tmpFileName, str(videofile))
+
 
     # Swap Faces
     batchSimSwap.title("Swapping faces though " + str(len(input_files)) + " files..")
@@ -73,6 +97,24 @@ def sortArguments():
             raise Exception(' '.join(['Unable to find file for face 1',"\""+str(sys.argv[2])+"\""," is not a valid face."]))
     else:
         raise Exception('Face 1 is not a valid face string.')
+    
+    print(sys.argv)
+    
+    if(isinstance(sys.argv[3], str)):
+        batchSimSwap.startTimeStamp = sys.argv[3]
+    if(isinstance(sys.argv[4], str)):
+        batchSimSwap.endTimeStamp = sys.argv[4]
+        
+
+def blockPrint():
+    # sys.stdout = open(os.devnull, 'w')
+    sys.stderr = open(os.devnull, 'w')
+
+# Enable print again
+def enablePrint():
+    # sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+
 
 # Get the input files from the input_X folder
 def getInputFiles():
