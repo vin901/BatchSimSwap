@@ -10,10 +10,10 @@ You can read the [Preparation Guide](https://github.com/neuralchen/SimSwap/blob/
     * Anaconda manages your Python environment.  Go to the [Anaconda website](https://docs.anaconda.com/anaconda/install/) to download it and run through the installation. You'll be running all the BatchSimSwap commands from the Anaconda Prompt.
 
 2. Start by running these commands
-    * Run the following commands in an Anaconda Prompt window to set up an Anaconda Environment called ***simswap***:
+    * Run the following commands in an Anaconda Prompt window to set up an Anaconda Environment called ***batchsimswap***:
 ```
-conda create -n simswap python=3.6
-conda activate simswap
+conda create -n batchsimswap python=3.6
+conda activate batchsimswap
 conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=10.2 -c pytorch
 
 (optional): pip install --ignore-installed imageio
