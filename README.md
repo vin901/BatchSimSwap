@@ -12,7 +12,7 @@ You can read the [Preparation Guide](https://github.com/neuralchen/SimSwap/blob/
 2. Start by running these commands
     * Run the following commands in an Anaconda Prompt window to set up an Anaconda Environment called ***batchsimswap***:
 ```
-conda create -n batchsimswap python=3.6
+conda create -n batchsimswap python=3.7
 conda activate batchsimswap
 conda install pytorch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0 cudatoolkit=10.2 -c pytorch
 
@@ -37,9 +37,9 @@ pip install send2trash beautifulsoup4 lxml pick python-dotenv instaloader
         * Another folder you'll need to create: `./insightface_func/models/antelope` where you will extract the contents of `antelope.zip` (Should be two files: `glintr100.onnx` and `scrfd_10g_bnkps.onnx`)
 
 4. Each time you run SimSwap you'll need to run:
-    * `conda activate simswap` from the Anaconda Prompt and then `cd` (Change Directory) into the SimSwap directory where you cloned or extracted this repository.  Since Anaconda Prompt always starts in the Windows Users Directory (i.e C:\Users\james - if your user is called james) I always create a bat file that activates simswap, and changes directory to where I cloned this repository (for example I cloned into the Documents folder)
-        * `conda activate simswap`
-        * `cd C:\Users\james\Document\BatchSimSwap`
+    * `conda activate batchsimswap` from the Anaconda Prompt and then `cd` (Change Directory) into the BatchSimSwap directory where you cloned or extracted this repository.  Since Anaconda Prompt always starts in the Windows Users Directory (i.e C:\Users\james - if your user is called james) I always create a bat file that activates batchsimswap, and changes directory to where I cloned this repository (for example I cloned into the Documents folder)
+        * `conda activate batchsimswap`
+        * `cd C:\Users\<user>\Document\BatchSimSwap`
     * Then its easy to get started by running one of the commands listed below i.e. `bsvideo 1 james`
 ---
 
